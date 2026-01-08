@@ -1,0 +1,180 @@
+shop-system/
+│
+├── login.html
+├── dashboard.html
+├── style.css
+└── script.js<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Shop Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="box">
+    <h2>Shop Login</h2>
+
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+
+    <button onclick="login()">Login</button>
+    <p id="msg"></p>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Shop Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="box">
+    <h2>Shop Bill & Debt System</h2>
+
+    <input type="text" id="name" placeholder="Customer Name">
+    <input type="number" id="amount" placeholder="Amount (Rs)">
+    
+    <select id="type">
+        <option value="Bill">Bill</option>
+        <option value="Debt">Debt</option>
+    </select>
+
+    <button onclick="addRecord()">Add Record</button>
+    <button onclick="logout()">Logout</button>
+
+    <h3>Summary</h3>
+    <p>Total Bill: Rs. <span id="totalBill">0</span></p>
+    <p>Total Debt: Rs. <span id="totalDebt">0</span></p>
+    <p><b>Net Balance: Rs. <span id="net">0</span></b></p>
+
+    <h3>Records</h3>
+    <ul id="list"></ul>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>body {
+    font-family: Arial, sans-serif;
+    background: #dbeeff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.box {
+    background: white;
+    padding: 20px;
+    width: 320px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+}
+
+h2, h3 {
+    text-align: center;
+}
+
+input, select, button {
+    width: 100%;
+    padding: 8px;
+    margin: 6px 0;
+}
+
+button {
+    background: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #0056b3;
+}
+
+ul {
+    padding: 0;
+}
+
+li {
+    list-style: none;
+    background: #f1f1f1;
+    margin: 4px 0;
+    padding: 6px;
+    font-size: 14px;
+}
+function login() {
+    let u = document.getElementById("username").value;
+    let p = document.getElementById("password").value;
+
+    if (u === "admin" && p === "1234") {
+        localStorage.setItem("login", "true");
+        window.location = "dashboard.html";
+    } else {
+        document.getElementById("msg").innerText = "Invalid Login!";
+    }
+}
+
+/* =============== PAGE PROTECTION =============== */
+
+if (window.location.pathname.includes("dashboard")) {
+    if (localStorage.getItem("login") !== "true") {
+        window.location = "login.html";
+    }
+}
+
+/* ================= ADD RECORD ================= */
+
+function addRecord() {
+    let name = document.getElementById("name").value;
+    let amount = Number(document.getElementById("amount").value);
+    let type = document.getElementById("type").value;
+
+    if (name === "" || amount <= 0) return;
+
+    let records = JSON.parse(localStorage.getItem("records")) || [];
+    records.push({ name, amount, type });
+    localStorage.setItem("records", JSON.stringify(records));
+
+    showRecords();
+}
+
+/* ============ SHOW RECORDS & CALCULATION ============ */
+
+function showRecords() {
+    let list = document.getElementById("list");
+    list.innerHTML = "";
+
+    let records = JSON.parse(localStorage.getItem("records")) || [];
+    let totalBill = 0;
+    let totalDebt = 0;
+
+    records.forEach(r => {
+        let li = document.createElement("li");
+        li.innerText = `${r.name} | Rs.${r.amount} | ${r.type}`;
+        list.appendChild(li);
+
+        if (r.type === "Bill") totalBill += r.amount;
+        if (r.type === "Debt") totalDebt += r.amount;
+    });
+
+    document.getElementById("totalBill").innerText = totalBill;
+    document.getElementById("totalDebt").innerText = totalDebt;
+    document.getElementById("net").innerText = totalBill - totalDebt;
+}
+
+/* ================= LOGOUT ================= */
+
+function logout() {
+    localStorage.removeItem("login");
+    window.location = "login.html";
+}
+
+if (window.location.pathname.includes("dashboard")) {
+    showRecords();
+}
